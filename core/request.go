@@ -28,18 +28,24 @@ func (r *RequestAccessor) StripBasePath(basePath string) string {
 		r.stripBasePath = ""
 		return ""
 	}
-
 	newBasePath := basePath
-	if !strings.HasPrefix(newBasePath, "/") {
-		newBasePath = "/" + newBasePath
+
+	for {
+		if !strings.HasPrefix(newBasePath, "/") {
+			break
+		}
+		newBasePath = strings.TrimPrefix(newBasePath, "/")
 	}
 
-	if strings.HasSuffix(newBasePath, "/") {
-		newBasePath = newBasePath[:len(newBasePath)-1]
+	for {
+		if !strings.HasSuffix(newBasePath, "/") {
+			break
+		}
+		newBasePath = strings.TrimSuffix(newBasePath, "/")
 	}
 
+	newBasePath = "/" + newBasePath
 	r.stripBasePath = newBasePath
-
 	return newBasePath
 }
 

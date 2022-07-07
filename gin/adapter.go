@@ -2,10 +2,11 @@ package ginadapter
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/e2u/aws-lambda-go-alb-targetgroup/core"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type GinLambda struct {

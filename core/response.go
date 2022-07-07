@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/base64"
 	"errors"
-	"github.com/aws/aws-lambda-go/events"
 	"net/http"
 	"unicode/utf8"
+
+	"github.com/aws/aws-lambda-go/events"
 )
 
 const defaultStatusCode = -1
