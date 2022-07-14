@@ -72,6 +72,7 @@ func (r *RequestAccessor) EventToRequest(req events.ALBTargetGroupRequest) (*htt
 	if req.IsBase64Encoded {
 		base64Body, err := base64.StdEncoding.DecodeString(req.Body)
 		if err != nil {
+			log.Println(err)
 			return nil, err
 		}
 		decodedBody = base64Body
@@ -92,26 +93,33 @@ func (r *RequestAccessor) EventToRequest(req events.ALBTargetGroupRequest) (*htt
 	}
 	path = serverAddress + path
 
+	qs := url.Values{}
+	mqu := func(es string) string {
+		qes, err := url.QueryUnescape(es)
+		if err != nil {
+			log.Println(err)
+			fmt.Printf("QueryUnescape error=%v", err)
+			return es
+		}
+		return qes
+	}
+
 	if len(req.MultiValueQueryStringParameters) > 0 {
-		queryString := ""
 		for q, l := range req.MultiValueQueryStringParameters {
 			for _, v := range l {
-				if queryString != "" {
-					queryString += "&"
-				}
-				queryString += url.QueryEscape(q) + "=" + url.QueryEscape(v)
+				qs.Add(mqu(q), mqu(v))
 			}
 		}
-		path += "?" + queryString
-	} else if len(req.QueryStringParameters) > 0 {
-		queryString := ""
-		for q := range req.QueryStringParameters {
-			if queryString != "" {
-				queryString += "&"
-			}
-			queryString += url.QueryEscape(q) + "=" + url.QueryEscape(req.QueryStringParameters[q])
+	}
+
+	if req.QueryStringParameters != nil && len(req.QueryStringParameters) > 0 {
+		for q, v := range req.QueryStringParameters {
+			qs.Add(mqu(q), mqu(v))
 		}
-		path += "?" + queryString
+	}
+
+	if len(qs) > 0 {
+		path += "?" + qs.Encode()
 	}
 
 	httpRequest, err := http.NewRequest(
@@ -125,9 +133,17 @@ func (r *RequestAccessor) EventToRequest(req events.ALBTargetGroupRequest) (*htt
 		log.Println(err)
 		return nil, err
 	}
+
 	for h := range req.Headers {
 		httpRequest.Header.Add(h, req.Headers[h])
 	}
+
+	if req.MultiValueHeaders != nil {
+		for k, vs := range req.MultiValueHeaders {
+			httpRequest.Header.Add(k, strings.Join(vs, ","))
+		}
+	}
+
 	return httpRequest, nil
 }
 

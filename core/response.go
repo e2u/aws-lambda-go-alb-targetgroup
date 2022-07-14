@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -64,8 +65,8 @@ func (r *ResponseWriter) notifyClosed() {
 
 func (r *ResponseWriter) headersToMap() map[string]string {
 	m := make(map[string]string)
-	for k, v := range r.headers {
-		m[k] = v[0]
+	for k, vs := range r.headers {
+		m[k] = strings.Join(vs, ",")
 	}
 	return m
 }
