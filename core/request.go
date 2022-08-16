@@ -122,7 +122,8 @@ func (r *RequestAccessor) EventToRequest(req events.ALBTargetGroupRequest) (*htt
 		path += "?" + qs.Encode()
 	}
 
-	httpRequest, err := http.NewRequest(
+	httpRequest, err := http.NewRequestWithContext(
+		context.TODO(),
 		strings.ToUpper(req.HTTPMethod),
 		path,
 		bytes.NewReader(decodedBody),
